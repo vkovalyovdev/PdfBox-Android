@@ -17,28 +17,26 @@
 package com.tom_roush.pdfbox.android;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 
-public class PDFBoxResourceLoader
-{
+public class PDFBoxResourceLoader {
 
     /**
      * The AssetManager used to load the resources
      */
-    private static AssetManager ASSET_MANAGER = null;
+    private static Context context = null;
 
     /**
      * Initializes the loader
      *
-     * @param context the context of the calling app
+     * @param _context the context of the calling app
      */
-    public static void init(Context context)
-    {
-        ASSET_MANAGER = context.getApplicationContext().getAssets();
+    public static void init(Context _context) {
+        context = _context.getApplicationContext();
     }
 
     /**
@@ -46,26 +44,28 @@ public class PDFBoxResourceLoader
      *
      * @return whether the loader has been initialized or not
      */
-    public static boolean isReady()
-    {
-        return ASSET_MANAGER != null;
+    public static boolean isReady() {
+        return context != null;
     }
 
     /**
      * Loads a resource file located in the assets folder
      *
      * @param path the path to the resource
-     *
      * @return the resource as an InputStream
      * @throws IOException if the resource cannot be found
      */
-    public static InputStream getStream(String path) throws IOException
-    {
-        if (ASSET_MANAGER == null)
-        {
-            Log.e("PdfBox-Android",
-                "PDFBoxResourceLoader is not initialized, call PDFBoxResourceLoader.init() before use");
+    public static InputStream getStream(String path) throws IOException {
+        if (path.startsWith("/")) {
+            path = path.substring(1);
         }
-        return ASSET_MANAGER.open(path);
+
+        int resourceId = context.getResources().getIdentifier(
+                path.replaceAll("/", "_").replaceAll("-", "_").toLowerCase(Locale.US).split("\\.")[0],
+                "raw",
+                context.getPackageName()
+        );
+
+        return context.getResources().openRawResource(resourceId);
     }
 }
